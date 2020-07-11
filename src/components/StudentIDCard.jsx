@@ -5,43 +5,89 @@ import slpLogo from '../img/SLP.png'
 
 const FETCH_ENDPOINT = 'http://localhost:4000'
 
-const StudentIDCard = () => {
+const useBackendAPI = () => {
     const [data, setData] = useState({
         id: '-',
         name: '-',
         balance: 0,
     })
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(false)
+    const [time, setTime] = useState(Date.now())
 
     useEffect(() => {
         const fetchCardData = async () => {
-            const result = await axios(FETCH_ENDPOINT)
-            console.log(result)
-            setData(result.data)
+            setError(false)
+            setLoading(true)
+
+            try {
+                const result = await axios(FETCH_ENDPOINT)
+                console.log(result)
+                setData(result.data)
+            } catch(error) {
+                setData({
+                    id: '-',
+                    name: '-',
+                    balance: 0,
+                })
+                setError(true)
+            }
+            setLoading(false)
         }
+
         fetchCardData()
-    }, [])
+    }, [time])
+
+    return [{data, loading, error}, setTime]
+}
+
+const StudentIDCard = () => {
+    const [{ data, loading, error}, getData] = useBackendAPI()
+    const handleOnClick = () => {
+        getData(Date.now())
+    }
 
     return (
-        <IDCardContaier>
-            <div className="box">
-                <article className="media">
-                    <div className="media-left">
-                        <figure className="image is-64x64">
-                            <img src={slpLogo} alt="logo" />
-                        </figure>
+        <>
+            {
+                error
+                ? (
+                    <div className="notification is-danger">
+                        <button className="delete"></button>
+                        サーバからデータが取得できませんでした😇
                     </div>
-                    <div className="media-content">
-                        <table className="table">
-                            <tbody>
-                                <tr><td>学籍番号</td><td>{data.id}</td></tr>
-                                <tr><td>名前</td><td>{data.name}</td></tr>
-                                <tr><td>IC残高</td><td>{data.balance}</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </article>
-            </div>
-        </IDCardContaier>
+                ) : <></>
+
+            }
+            <IDCardContaier>
+                <div className="box">
+                    {
+                        loading
+                        ? <progress className="progress is-small is-primary" max="100">15%</progress>
+                        : <></>
+                    }
+                    <article className="media">
+                        <div className="media-left">
+                            <figure className="image is-64x64">
+                                <img src={slpLogo} alt="logo" />
+                            </figure>
+                        </div>
+                        <div className="media-content">
+                            <table className="table">
+                                <tbody>
+                                    <tr><td>学籍番号</td><td>{data.id}</td></tr>
+                                    <tr><td>名前</td><td>{data.name}</td></tr>
+                                    <tr><td>IC残高</td><td>{data.balance}</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </article>
+                </div>
+                <UpdateButton className="button is-primary is-fullwidth" onClick={handleOnClick}>
+                    更新
+                </UpdateButton>
+            </IDCardContaier>
+        </>
     )
 }
 
@@ -53,5 +99,7 @@ const IDCardContaier = styled.div`
     margin-left: auto;
     margin-bottom: 10px
 `
+
+const UpdateButton = styled.a``
 
 export default StudentIDCard
