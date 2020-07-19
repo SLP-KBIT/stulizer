@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import axios from 'axios';
 import slpLogo from '../img/SLP.png'
@@ -43,10 +43,31 @@ const useBackendAPI = () => {
 
 const StudentIDCard = () => {
     const [{ data, loading, error}, getData] = useBackendAPI()
+    const intervalID = useRef(null)
+    const [request, onRequest] = useState(false)
+    
     const handleOnClick = () => {
+        clearInterval(intervalID.current)
+        onRequest(true)
         getData(Date.now())
+        handleOnInterval()
+    }
+    
+    const handleOnInterval = () => {
+        intervalID.current = setInterval(() => {
+            onRequest(false)
+            getData(Date.now())
+        }, 5000)
     }
 
+    useEffect(() => {
+        handleOnInterval()
+        
+        return () => {
+            clearInterval(intervalID.current)
+        }
+    }, [])
+    
     return (
         <>
             {
@@ -62,7 +83,7 @@ const StudentIDCard = () => {
             <IDCardContaier>
                 <div className="box">
                     {
-                        loading
+                        loading && request
                         ? <progress className="progress is-small is-primary" max="100">15%</progress>
                         : <></>
                     }

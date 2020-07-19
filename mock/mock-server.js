@@ -7,16 +7,12 @@ const port = 4000;
 app.use(cors());
 
 app.get('/', (req, res) => {
-    setTimeout(
-        () => {
             res.json({
                 id: "s20t300",
                 name: "hoge",
                 balance: 300
             });
         },
-        "2000"
-    );
-});
+);
 
 app.listen(port);
